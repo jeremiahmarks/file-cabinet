@@ -1,0 +1,112 @@
+<html>
+<head>
+	<title>Infusionsoft Data Upload</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="resources\static\css\normalize.css" media="screen" title="no title" charset="utf-8">
+	<style>
+		body {
+			background-color: #EEE;
+		}
+
+		#navbar-top {
+			height: 56px;
+			background-color: #303442;
+			width: 100%;
+		}
+
+		form {
+			display: inline-block;
+			text-align: center;
+			margin: 10% 0px 0px 40%;
+		}
+
+		input {
+			display: inline-block;
+			margin: 5px;
+		}
+
+		h1 {
+			text-align: center;
+			color: #EEE;
+		}
+
+		img {
+			padding: 12px 0 0 15px;
+		}
+		#description {
+			vertical-align: super;
+			color: #EEE;
+			font-size: 1.5em;
+		}
+
+		.btn-large {
+			background-color: #51A3DC;
+			border-color: #125079;
+			border-width: 1px 1px 2px;
+			border-radius: 4px;
+			color: #FFFFFF;
+			width: 130px;
+			height: 40px;
+			margin-left: 50%;
+		}
+
+		.btn-large:hover {
+			background-color: #4492c8;
+			border-color: #125079;
+			border-width: 1px 1px 2px;
+			border-radius: 5px;
+			color: #FFFFFF;
+		}
+	</style>
+</head>
+<body>
+<header>
+	<div id="navbar-top">
+		<div class="branding">
+			<img alt="logo" src="\images\logo.png" />
+			<span id="description">Infusionsoft Data Upload</span>
+		</div>
+	</div>
+</header>
+<form method="POST" enctype="multipart/form-data" action="/upload">
+	<input type="text" name="appname" placeholder="Appname" required>
+	<br />
+	<br />
+	<input type="file" name="file">
+	<br />
+	<input class="btn-large" type="submit" value="Upload">
+
+	<div class="progress">
+		<div class="bar"></div >
+		<div class="percent"></div >
+	</div>
+
+	<div id="status"></div>
+</form>
+<script>
+	$(function() {
+
+		var bar = $('.bar');
+		var percent = $('.percent');
+		var status = $('#status');
+
+		$('form').ajaxForm({
+			beforeSend: function() {
+				status.empty();
+				var percentVal = '0%';
+				bar.width(percentVal);
+				percent.html(percentVal);
+			},
+			uploadProgress: function(event, position, total, percentComplete) {
+				var percentVal = percentComplete + '%';
+				bar.width(percentVal);
+				percent.html(percentVal);
+			},
+			complete: function(xhr) {
+				status.html(xhr.responseText);
+			}
+		});
+	});
+</script>
+</body>
+</html>

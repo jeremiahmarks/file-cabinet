@@ -1,0 +1,5 @@
+*.class
+*.iml
+/build
+*.bat
+gradlew
