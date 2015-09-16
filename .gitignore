@@ -1,5 +1,7 @@
+*.csv
 *.class
 *.iml
 /build
 *.bat
+*.zip
 gradlew
