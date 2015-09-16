@@ -51,7 +51,7 @@ public class FileUploadController {
                 boolean hasCreditCardInfo = false;
                 while (sc.hasNextLine()) {
                     String line = sc.nextLine();
-                    //System.out.println(line); //verify line data visually
+                    System.out.println(line); //verify line data visually
                     Matcher m = regexp.matcher(line);
                     if (m.find()) {
                         hasCreditCardInfo = true;
@@ -75,3 +75,6 @@ public class FileUploadController {
     }
 
 }
+
+
+//a new change
