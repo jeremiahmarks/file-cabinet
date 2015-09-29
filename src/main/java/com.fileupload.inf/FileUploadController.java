@@ -1,4 +1,4 @@
-package hello;
+package com.fileupload.inf;
 
 import java.io.*;
 
@@ -42,26 +42,31 @@ public class FileUploadController {
         if (!file.isEmpty()) {
             String ts =
                     new java.text.SimpleDateFormat("yyyy-MM-dd-hh-mm-ssa").format(new Date()); //Date stamp
-            String thisfilename = file.getOriginalFilename(); //Get file name
+            String uploadedFile = file.getOriginalFilename(); //Get file name
             try {
-                byte[] bytes = file.getBytes();
-                InputStream inputStream = new ByteArrayInputStream(bytes);
-                Scanner sc = new Scanner(inputStream, "UTF-8");
-                Pattern regexp = Pattern.compile("(([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4}))|(([0-9]{4})[-|\\s| ]([0-9]{6})[-|\\s| ]([0-9]{5}))");
+                InputStream inputStream = new ByteArrayInputStream(file.getBytes());
+                Scanner scan = new Scanner(inputStream, "UTF-8");
+                Pattern regccnum = Pattern.compile("(([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4}))|(([0-9]{4})[-|\\s| ]([0-9]{6})[-|\\s| ]([0-9]{5}))");
+                Pattern regssn = Pattern.compile("^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$");
                 boolean hasCreditCardInfo = false;
-                while (sc.hasNextLine()) {
-                    String line = sc.nextLine();
+                boolean hasSSN = false;
+                while (scan.hasNextLine()) {
+                    String line = scan.nextLine();
                     System.out.println(line); //verify line data visually
-                    Matcher m = regexp.matcher(line);
+                    Matcher m = regccnum.matcher(line);
+                    Matcher n = regssn.matcher(line);
                     if (m.find()) {
                         hasCreditCardInfo = true;
                         return "Unable to upload file with credit card data";
+                    } else if (n.find()) {
+                        hasSSN = true;
+                        return "Unable to upload file with SSN data";
                     }
                 }
-                if (hasCreditCardInfo == false) {
+                if (hasCreditCardInfo == false && hasSSN == false) {
                     BufferedOutputStream stream =
-                            new BufferedOutputStream(new FileOutputStream(new File(appname + "_" + ts + "_" + thisfilename)));
-                    stream.write(bytes);
+                            new BufferedOutputStream(new FileOutputStream(new File(appname + "_" + ts + "_" + uploadedFile)));
+                    stream.write(inputStream.read());
                     stream.close();
                     return "Thank you for your upload";
                 }
