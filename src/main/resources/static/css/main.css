@@ -1,0 +1,73 @@
+body {
+    background-color: #EEE;
+}
+
+#navbar-top {
+    height: 56px;
+    background-color: #303442;
+    width: 100%;
+}
+
+form {
+    display: block;
+    text-align: center;
+    margin-top: 10%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+input {
+    display: inline-block;
+    margin: 5px;
+}
+
+h1 {
+    text-align: center;
+    color: #EEE;
+}
+
+img {
+    padding: 12px 0 0 15px;
+}
+#description {
+    vertical-align: super;
+    color: #EEE;
+    font-size: 1.5em;
+}
+
+.btn-large {
+    background-color: #51A3DC;
+    border-color: #125079;
+    border-width: 1px 1px 2px;
+    border-radius: 4px;
+    color: #FFFFFF;
+    width: 130px;
+    height: 40px;
+    margin-left: 50%;
+}
+
+.btn-large:hover {
+    background-color: #4492c8;
+    border-color: #125079;
+    border-width: 1px 1px 2px;
+    border-radius: 5px;
+    color: #FFFFFF;
+}
+
+.btn-default {
+    width: 120;
+    height: 30px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: "proxima_nova_rgbold";
+    letter-spacing: .3px;
+    border-radius: 5px;
+    border-width: 1px 1px 2px;
+    background-color: #f7f7f7;
+    border-color: #bbb;
+    color: #5e5e5e;
+}
+
+.btn-default:hover {
+    background-color: #fff;
+}

@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.Character;
+import java.lang.String;
 import java.lang.System;
 import java.util.Date;
 import java.util.Scanner;
@@ -23,12 +24,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.commons.validator.routines.CreditCardValidator;
+
 @Controller
 public class FileUploadController {
 
-    @RequestMapping(value="/upload", method=RequestMethod.GET)
+    /*@RequestMapping(value="/upload", method=RequestMethod.GET)
     public @ResponseBody String provideUploadInfo() {
         return "You can upload a file by posting to this same URL.";
+    }
+
+    @RequestMapping(value="/reupload", method=RequestMethod.GET)
+    public String index() {
+        return "index";
+    }
+*/
+    @RequestMapping(value = "/failedupload", method = RequestMethod.GET)
+    public String failedpage() {
+        return "failedpage";
     }
 
     //@RequestMapping(value="/fail", method=RequestMethod.GET)
@@ -36,11 +49,13 @@ public class FileUploadController {
     //     return "redirect:failpage.html";
     // }
 
-    @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody String handleFileUpload(@RequestParam("appname") String appname,
-                                                 @RequestParam("file") MultipartFile file){
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public
+    String handleFileUpload(@RequestParam("appname") String appname,
+                            @RequestParam("file") MultipartFile file) {
+        String url = "";
         if (!file.isEmpty()) {
-            String ts =
+            String dateUploadedStamp =
                     new java.text.SimpleDateFormat("yyyy-MM-dd-hh-mm-ssa").format(new Date()); //Date stamp
             String uploadedFile = file.getOriginalFilename(); //Get file name
             try {
@@ -57,18 +72,18 @@ public class FileUploadController {
                     Matcher n = regssn.matcher(line);
                     if (m.find()) {
                         hasCreditCardInfo = true;
-                        return "Unable to upload file with credit card data";
+                         url = "failedpage";
                     } else if (n.find()) {
                         hasSSN = true;
-                        return "Unable to upload file with SSN data";
+                         url = "failedpage";
                     }
                 }
                 if (hasCreditCardInfo == false && hasSSN == false) {
                     BufferedOutputStream stream =
-                            new BufferedOutputStream(new FileOutputStream(new File(appname + "_" + ts + "_" + uploadedFile)));
+                            new BufferedOutputStream(new FileOutputStream(new File(appname + "_" + dateUploadedStamp + "_" + uploadedFile)));
                     stream.write(inputStream.read());
                     stream.close();
-                    return "Thank you for your upload";
+                    return "success";
                 }
             } catch (Exception e) {
                 return "You failed to upload the file";
@@ -76,10 +91,7 @@ public class FileUploadController {
         } else {
             return "failed upload because the file was empty.";
         }
-        return "success";
+        return url;
     }
 
 }
-
-
-//a new change
