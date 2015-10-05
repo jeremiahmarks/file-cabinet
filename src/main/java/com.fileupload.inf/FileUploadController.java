@@ -29,25 +29,10 @@ import org.apache.commons.validator.routines.CreditCardValidator;
 @Controller
 public class FileUploadController {
 
-    /*@RequestMapping(value="/upload", method=RequestMethod.GET)
-    public @ResponseBody String provideUploadInfo() {
-        return "You can upload a file by posting to this same URL.";
-    }
-
-    @RequestMapping(value="/reupload", method=RequestMethod.GET)
-    public String index() {
-        return "index";
-    }
-*/
     @RequestMapping(value = "/failedupload", method = RequestMethod.GET)
     public String failedpage() {
         return "failedpage";
     }
-
-    //@RequestMapping(value="/fail", method=RequestMethod.GET)
-    //public String uploadfailed() {
-    //     return "redirect:failpage.html";
-    // }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public
@@ -55,8 +40,8 @@ public class FileUploadController {
                             @RequestParam("file") MultipartFile file) {
         String url = "";
         if (!file.isEmpty()) {
-            String dateUploadedStamp =
-                    new java.text.SimpleDateFormat("yyyy-MM-dd-hh-mm-ssa").format(new Date()); //Date stamp
+            //String dateUploadedStamp =
+            //        new java.text.SimpleDateFormat("yyyy-MM-dd-hh-mm-ssa").format(new Date()); //Date stamp
             String uploadedFile = file.getOriginalFilename(); //Get file name
             try {
                 InputStream inputStream = new ByteArrayInputStream(file.getBytes());
@@ -67,29 +52,34 @@ public class FileUploadController {
                 boolean hasSSN = false;
                 while (scan.hasNextLine()) {
                     String line = scan.nextLine();
-                    System.out.println(line); //verify line data visually
+                    //System.out.println(line); //verify line data visually
                     Matcher m = regccnum.matcher(line);
                     Matcher n = regssn.matcher(line);
                     if (m.find()) {
                         hasCreditCardInfo = true;
-                         url = "failedpage";
+                        url = "failedpage";
                     } else if (n.find()) {
                         hasSSN = true;
-                         url = "failedpage";
+                        url = "failedpage";
                     }
                 }
                 if (hasCreditCardInfo == false && hasSSN == false) {
+                    String storage = System.getProperty("user.home");
+                    File fileNew = new File(storage + "\\customerdata\\" + appname + "_" + uploadedFile);
                     BufferedOutputStream stream =
-                            new BufferedOutputStream(new FileOutputStream(new File(appname + "_" + dateUploadedStamp + "_" + uploadedFile)));
-                    stream.write(inputStream.read());
-                    stream.close();
+                            new BufferedOutputStream(new FileOutputStream(fileNew));
+                    if(!fileNew.exists()) {
+                        stream.write(inputStream.read());
+                        stream.close();
+                    }
                     return "success";
                 }
             } catch (Exception e) {
-                return "You failed to upload the file";
+                System.out.println(e);
+                return "error";
             }
         } else {
-            return "failed upload because the file was empty.";
+            return "failedpage";
         }
         return url;
     }
