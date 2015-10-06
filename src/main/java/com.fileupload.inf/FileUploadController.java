@@ -29,59 +29,77 @@ import org.apache.commons.validator.routines.CreditCardValidator;
 @Controller
 public class FileUploadController {
 
+    private final String CREDIT_CARD_REGEX = "(([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4}))|(([0-9]{4})[-|\\s| ]([0-9]{6})[-|\\s| ]([0-9]{5}))";
+    private final String SOCIAL_SECURITY_REGEX = "^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$";
+    private final Pattern creditCardPattern = Pattern.compile(CREDIT_CARD_REGEX);
+    private final Pattern socialSecurityPattern = Pattern.compile(SOCIAL_SECURITY_REGEX);
+
     @RequestMapping(value = "/failedupload", method = RequestMethod.GET)
     public String failedpage() {
         return "failedpage";
     }
 
-    @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public
-    String handleFileUpload(@RequestParam("appname") String appname,
-                            @RequestParam("file") MultipartFile file) {
-        String url = "";
-        if (!file.isEmpty()) {
-            //String dateUploadedStamp =
-            //        new java.text.SimpleDateFormat("yyyy-MM-dd-hh-mm-ssa").format(new Date()); //Date stamp
-            String uploadedFile = file.getOriginalFilename(); //Get file name
-            try {
-                InputStream inputStream = new ByteArrayInputStream(file.getBytes());
-                Scanner scan = new Scanner(inputStream, "UTF-8");
-                Pattern regccnum = Pattern.compile("(([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4})[-|\\s| ]([0-9]{4}))|(([0-9]{4})[-|\\s| ]([0-9]{6})[-|\\s| ]([0-9]{5}))");
-                Pattern regssn = Pattern.compile("^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$");
-                boolean hasCreditCardInfo = false;
-                boolean hasSSN = false;
-                while (scan.hasNextLine()) {
-                    String line = scan.nextLine();
-                    //System.out.println(line); //verify line data visually
-                    Matcher m = regccnum.matcher(line);
-                    Matcher n = regssn.matcher(line);
-                    if (m.find()) {
-                        hasCreditCardInfo = true;
-                        url = "failedpage";
-                    } else if (n.find()) {
-                        hasSSN = true;
-                        url = "failedpage";
-                    }
-                }
-                if (hasCreditCardInfo == false && hasSSN == false) {
-                    String storage = System.getProperty("user.home");
-                    File fileNew = new File(storage + "\\customerdata\\" + appname + "_" + uploadedFile);
-                    BufferedOutputStream stream =
-                            new BufferedOutputStream(new FileOutputStream(fileNew));
-                    if(!fileNew.exists()) {
-                        stream.write(inputStream.read());
-                        stream.close();
-                    }
-                    return "success";
-                }
-            } catch (Exception e) {
-                System.out.println(e);
-                return "error";
+    private void foundBadData(MultipartFile file) {
+        InputStream inputStream = new ByteArrayInputStream(file.getBytes());
+        Scanner scan = new Scanner(inputStream, "UTF-8");
+
+        boolean hasCreditCardInfo = false;
+        boolean hasSSN = false;
+        String line;
+        Matcher creditCardMatcher;
+        Matcher socialSecurityMatcher;
+
+        while ((!hasCreditCardInfo || !hasSSN) && scan.hasNextLine()) {
+            line = scan.nextLine();
+            //System.out.println(line); //verify line data visually
+            creditCardMatcher = creditCardPattern.matcher(line);
+            socialSecurityMatcher = socialSecurityPattern.matcher(line);
+            if (!hasCreditCardInfo && creditCardMatcher.find()) {
+                hasCreditCardInfo = true;
+                url = "failedpage";
+                //add message condition for type of data that is passed in
+                //add multiple file upload
             }
-        } else {
-            return "failedpage";
+            if (!hasSSN && socialSecurityMatcher.find()) {
+                hasSSN = true;
+                url = "failedpage";
+            }
         }
-        return url;
     }
 
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public String handleFileUpload(@RequestParam("appname") String appname,
+                            @RequestParam("file") MultipartFile[] files) {
+        String result = "error";
+        for (MultipartFile file : files) {
+
+            String url = "";
+            if (!file.isEmpty()) {
+                //String dateUploadedStamp =
+                //        new java.text.SimpleDateFormat("yyyy-MM-dd-hh-mm-ssa").format(new Date()); //Date stamp
+                String uploadedFile = file.getOriginalFilename(); //Get file name
+                try {
+                    foundBadData(file);
+                    if (hasCreditCardInfo == false && hasSSN == false) {
+                        String storage = System.getProperty("user.home");
+                        File fileNew = new File(storage + "\\customerdata\\" + appname + "_" + uploadedFile);
+                        BufferedOutputStream stream =
+                                new BufferedOutputStream(new FileOutputStream(fileNew));
+                        if (!fileNew.exists()) {
+                            stream.write(inputStream.read());
+                            stream.close();
+                        }
+                        result = "success";
+                    }
+                } catch (Exception e) {
+                    System.out.println(e);
+                    result = "error";
+                }
+            } else {
+                result = "failedpage";
+            }
+            result = url;
+        }
+    }
+    return result;
 }
